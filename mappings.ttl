@@ -29,7 +29,7 @@
     htv:methodName "GET";
     htv:headers ([
       htv:fieldName "X-API-Key";
-      htv:fieldValue "C7D7011A-68C9-11EC-B9BF-42010A800003";
+      htv:fieldValue "*****";
     ]);
   ];
 .
