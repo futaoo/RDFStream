@@ -145,15 +145,15 @@
   
 <#FunctionMap1>
   rr:datatype xsd:dateTime;
-  fnml:functionValue [                                  # The object is the result of the function
+  fnml:functionValue [                                                 # The object is the result of the function
       rml:logicalSource <#logicalSource> ;                             # Use the same data source for input
       rr:predicateObjectMap [
           rr:predicate fno:executes ;                                  # Execute the function…
-          rr:objectMap [ rr:constant grel:timestampToUTC ] # grel:toUppercase
+          rr:objectMap [ rr:constant grel:timestampToUTC ]             # grel:toUppercase
       ];
       rr:predicateObjectMap [
           rr:predicate grel:inputTimestamp ;
-          rr:objectMap [ rml:reference "last_seen" ]         # Use as input the "name" reference
+          rr:objectMap [ rml:reference "last_seen" ]                   # Use as input the "name" reference
       ]
   ]
 .
