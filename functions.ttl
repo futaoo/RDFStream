@@ -1,0 +1,69 @@
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix doap:    <http://usefulinc.com/ns/doap#> .
+@prefix fno:     <https://w3id.org/function/ontology#> .
+@prefix fnoi:    <https://w3id.org/function/vocabulary/implementation#> .
+@prefix fnom:    <https://w3id.org/function/vocabulary/mapping#> .
+@prefix grel:    <http://users.ugent.be/~bjdmeest/function/grel.ttl#> .
+@prefix grelm:   <http://fno.io/grel/rmlmapping#> .
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+
+grel:now_utc
+   a                   fno:Function ;
+   fno:name            "now in UTC" ;
+   dcterms:description "now in UTC" ;
+   fno:expects         ( ) ;
+   fno:returns         ( grel:output_datetime ) .
+
+
+grel:output_datetime
+    a             fno:Output ;
+    fno:name      "datetime" ;
+    rdfs:label    "datetime" ;
+    fno:predicate grel:o_datetime ;
+    fno:type      xsd:dateTime .
+
+
+grelm:javaDate
+    a               fnoi:JavaClass ;
+    doap:download-page "./lib/GrelFunctionPlus.jar" ;
+    fnoi:class-name "io.fno.grelplus.DateFunctions" . 
+
+grelm:nowMapping
+    a                       fnoi:Mapping ;
+    fno:function            grel:now_utc ;
+    fno:implementation      grelm:javaDate ;
+    fno:methodMapping    [ a                fnom:StringMethodMapping ;
+                           fnom:method-name "nowUTC" ] ;
+    fno:returnMapping    [ a                   fnom:DefaultReturnMapping ;
+                           fnom:functionOutput grel:output_datetime ] .
+
+
+grel:timestampToUTC
+    a                   fno:Function ;
+    fno:name            "timestampToUTC" ;
+    dcterms:description "timestampToUTC" ;
+    fno:expects         ( grel:timestamp) ;
+    fno:returns         ( grel:output_datetime ) .
+
+
+grel:timestamp
+    a             fno:Parameter ;
+    fno:predicate grel:inputTimestamp ;
+    fno:type      xsd:integer ;
+    fno:required  "true"^^xsd:boolean .
+
+
+grel:timestampMapping
+    a                       fnoi:Mapping ;
+    fno:function            grel:timestampToUTC ;
+    fno:implementation      grelm:javaDate ;
+    fno:methodMapping    [ a                fnom:StringMethodMapping ;
+                           fnom:method-name "timestampToUTC" ] ;
+    fno:                 [ a                fnom:PositionParameterMapping ;
+                           fnom:functionParameter               grel:timestamp ;
+                           fnom:implementationParameterPosition "1"^^xsd:int ] ;
+    fno:returnMapping    [ a                   fnom:DefaultReturnMapping ;
+                           fnom:functionOutput grel:output_datetime ] .

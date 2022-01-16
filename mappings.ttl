@@ -1,0 +1,159 @@
+@prefix rml: <http://semweb.mmlab.be/ns/rml#> .
+@prefix rr: <http://www.w3.org/ns/r2rml#> .
+@prefix ql: <http://semweb.mmlab.be/ns/ql#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix td: <https://www.w3.org/2019/wot/td#> .
+@prefix htv: <http://www.w3.org/2011/http#> .
+@prefix hctl: <https://www.w3.org/2019/wot/hypermedia#> .
+@prefix schema: <http://schema.org/> .
+@prefix gtfs: <http://vocab.gtfs.org/terms#> .
+@prefix geo: <http://www.w3.org/2003/01/geo/wgs84_pos#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix fnml: <http://semweb.mmlab.be/ns/fnml#> .
+@prefix fno:  <https://w3id.org/function/ontology#> .
+@prefix grel: <http://users.ugent.be/~bjdmeest/function/grel.ttl#> .
+@prefix sosa: <http://www.w3.org/ns/sosa/> .
+@prefix ex: <http://res.example.org/> .
+@base <http://example.org/rules/> .
+
+<#WoTWebAPISource> a td:PropertyAffordance;
+  td:hasForm [
+    # URL and content type
+    hctl:hasTarget "https://api.purpleair.com/v1/sensors/59111";
+    hctl:forContentType "application/json";
+    # Read only
+    hctl:hasOperationType td:readpropert;
+    # Set HTTP method and headers
+    htv:methodName "GET";
+    htv:headers ([
+      htv:fieldName "X-API-Key";
+      htv:fieldValue "C7D7011A-68C9-11EC-B9BF-42010A800003";
+    ]);
+  ];
+.
+
+<#WoTWebAPI> a td:Thing;
+  td:hasPropertyAffordance <#WoTWebResource>;
+.
+
+
+
+<#logicalSource>
+  a rml:LogicalSource;
+    rml:source <#WoTWebAPISource>;
+    rml:referenceFormulation ql:JSONPath;
+    rml:iterator "$.sensor"
+.
+
+
+
+<#TriplesMap_sensor> a rr:TriplesMap;
+  rml:logicalSource <#logicalSource>
+.
+
+<#TriplesMap_observation> a rr:TriplesMap;
+  rml:logicalSource <#logicalSource>
+.
+
+<#tsGraphMap> a rr:TriplesMap;
+  rml:logicalSource <#logicalSource>
+.
+
+
+<#TriplesMap_sensor>
+  rr:subjectMap [
+    rr:template "http://res.example.org/sensor_{sensor_index}";
+    rr:class sosa:Sensor;
+    rr:graphMap [rr:template "http://res.example.org/tsg_{last_seen}"]
+  ];
+  rr:predicateObjectMap [
+      rr:predicate geo:lat;
+      rr:objectMap [
+      rml:reference "latitude"
+    ]
+  ];
+  rr:predicateObjectMap [
+      rr:predicate geo:long;
+      rr:objectMap [
+      rml:reference "longitude"
+    ]
+  ];
+  rr:predicateObjectMap [
+      rr:predicate rdfs:comment;
+      rr:objectMap [
+      rml:reference "name"
+    ]
+  ];
+  rr:predicateObjectMap [
+      rr:predicate sosa:madeObservation;
+      rr:objectMap [
+      rr:parentTriplesMap <#TriplesMap_observation>
+    ]
+  ]
+ .
+
+<#TriplesMap_observation>
+  rr:subjectMap [
+    rr:template "http://res.example.org/observation_humidity_{last_seen}";
+    rr:class sosa:Observation;
+    rr:graphMap [rr:template "http://res.example.org/tsg_{last_seen}"]
+  ];
+  rr:predicateObjectMap [
+      rr:predicate sosa:hasSimpleResult;
+      rr:objectMap [
+      rml:reference "humidity"
+    ]
+  ];
+  rr:predicateObjectMap [
+      rr:predicate sosa:observedProperty;
+      rr:objectMap [rr:constant ex:Humidity]
+  ];
+  rr:predicateObjectMap [
+      rr:predicate sosa:resultTime;
+      rr:objectMap <#FunctionMap1>
+  ]
+.
+
+
+
+<#tsGraphMap>
+  rr:subjectMap [
+    rr:template "http://res.example.org/tsg_{last_seen}";
+    rr:class schema:tsGraph
+  ];
+  rr:predicateObjectMap [
+      rr:predicate prov:generatedAtTime;
+      rr:objectMap <#FunctionMap0> ;
+  ]
+.
+  
+
+
+<#FunctionMap0>
+  rr:datatype xsd:dateTime;
+  fnml:functionValue [                                  # The object is the result of the function
+      rml:logicalSource <#logicalSource>;                                # Use the same data source for input
+      rr:predicateObjectMap [
+          rr:predicate fno:executes ;                   # Execute the function…
+          rr:objectMap [ rr:constant grel:now_utc ] # grel:toUppercase
+      ]
+  ] 
+.
+
+  
+<#FunctionMap1>
+  rr:datatype xsd:dateTime;
+  fnml:functionValue [                                  # The object is the result of the function
+      rml:logicalSource <#logicalSource> ;                             # Use the same data source for input
+      rr:predicateObjectMap [
+          rr:predicate fno:executes ;                   # Execute the function…
+          rr:objectMap [ rr:constant grel:timestampToUTC ] # grel:toUppercase
+      ];
+      rr:predicateObjectMap [
+          rr:predicate grel:inputTimestamp ;
+          rr:objectMap [ rml:reference "last_seen" ]         # Use as input the "name" reference
+      ]
+  ]
+.
